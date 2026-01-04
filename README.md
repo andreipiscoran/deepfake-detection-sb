@@ -17,17 +17,17 @@ python main.py download
 
 # 3. Extract features (choose one)
 python main.py preprocess --features cnn --output data/cnn           # CNN features (EfficientNet)
-python main.py preprocess --features localized --output data/local   # Localized DCT (patch-based)
+python main.py preprocess --features localized --output data/localized   # Localized DCT (patch-based)
 python main.py preprocess --features dct --output data/dct           # Global DCT
 
 # 4. Analyze data quality (recommended before training)
-python analyze_data.py data/local --save_plots
+python analyze_data.py data/localized --save_plots
 
 # 5. Train Schrödinger Bridge
-python main.py train --data_dir data/local --pca_dim 64
+python main.py train --data_dir data/localized --pca_dim 64
 
 # 6. Test different classifiers
-python test_localized.py data/local --pca_dims 32 64 128
+python test_localized.py data/localized --pca_dims 32 64 128
 ```
 
 ---
@@ -53,13 +53,13 @@ python main.py preprocess --data_dir /path/to/videos --output data/processed \
     --max_samples 100          # Limit samples per class (optional)
 
 # Train Gaussian Schrödinger Bridge
-python main.py train --data_dir data/local \
+python main.py train --data_dir data/localized \
     --pca_dim 64 \             # PCA dimensions
     --shrinkage 0.1 \          # Covariance regularization
     --val_split 0.2
 
 # Evaluate trained model
-python main.py evaluate --data_dir data/local \
+python main.py evaluate --data_dir data/localized \
     --checkpoint experiments/checkpoints/checkpoint_best.pt \
     --n_samples 500            # Subsample for faster eval (optional)
 
@@ -73,7 +73,7 @@ python main.py demo --video path/to/video.mp4 \
 Analyze statistical properties of your feature data before choosing a method:
 
 ```bash
-python analyze_data.py data/local --save_plots --pca_dims 32 64 128 256
+python analyze_data.py data/localized --save_plots --pca_dims 32 64 128 256
 ```
 
 **Output includes:**
@@ -89,7 +89,7 @@ python analyze_data.py data/local --save_plots --pca_dims 32 64 128 256
 Quick comparison of different classifiers:
 
 ```bash
-python test_localized.py data/local --pca_dims 32 64 128 256 --val_split 0.2
+python test_localized.py data/localized --pca_dims 32 64 128 256 --val_split 0.2
 ```
 
 Tests: Logistic Regression, LDA, QDA, Mahalanobis classifier
@@ -284,13 +284,13 @@ Before training, **always run analyze_data.py**. Key metrics:
 docker-compose build deepfake-cpu
 
 # Extract features 
-docker-compose run deepfake-cpu python main.py preprocess --features localized --output data/local
+docker-compose run deepfake-cpu python main.py preprocess --features localized --output data/localized
 
 # Run analysis
-docker-compose run deepfake-cpu python analyze_data.py data/local --save_plots
+docker-compose run deepfake-cpu python analyze_data.py data/localized --save_plots
 
 # Train
-docker-compose run deepfake-cpu python main.py train --data_dir data/local --pca_dim 64
+docker-compose run deepfake-cpu python main.py train --data_dir data/localized --pca_dim 64
 ```
 
 ---

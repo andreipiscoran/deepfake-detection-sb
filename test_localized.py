@@ -107,7 +107,7 @@ def mahalanobis_classifier(X_train, y_train, X_val, shrinkage=0.1):
     return np.array(preds)
 
 
-def test_classifiers(features, labels, pca_dims=[32, 64, 128, 256], val_split=0.2):
+def test_classifiers(features, labels, pca_dims=[32, 64, 128, 256], val_split=0.2, balance=True):
     """Test multiple classifiers at different PCA dimensions."""
     
     # Split data
@@ -118,6 +118,27 @@ def test_classifiers(features, labels, pca_dims=[32, 64, 128, 256], val_split=0.
     print(f"\nData: {len(X_train)} train, {len(X_val)} val")
     print(f"Train: {(y_train == 0).sum()} real, {(y_train == 1).sum()} fake")
     print(f"Val:   {(y_val == 0).sum()} real, {(y_val == 1).sum()} fake")
+    
+    # Balance training data by undersampling majority class
+    if balance:
+        real_idx = np.where(y_train == 0)[0]
+        fake_idx = np.where(y_train == 1)[0]
+        
+        n_minority = min(len(real_idx), len(fake_idx))
+        
+        np.random.seed(42)
+        if len(real_idx) > len(fake_idx):
+            real_idx = np.random.choice(real_idx, n_minority, replace=False)
+        else:
+            fake_idx = np.random.choice(fake_idx, n_minority, replace=False)
+        
+        balanced_idx = np.concatenate([real_idx, fake_idx])
+        np.random.shuffle(balanced_idx)
+        
+        X_train = X_train[balanced_idx]
+        y_train = y_train[balanced_idx]
+        
+        print(f"Balanced: {(y_train == 0).sum()} real, {(y_train == 1).sum()} fake")
     
     # Standardize
     scaler = StandardScaler()
@@ -234,6 +255,8 @@ def main():
     parser.add_argument("--pca_dims", type=int, nargs="+", default=[32, 64, 128, 256],
                        help="PCA dimensions to test")
     parser.add_argument("--val_split", type=float, default=0.2, help="Validation split")
+    parser.add_argument("--no-balance", action="store_true", 
+                       help="Disable undersampling (default: balance classes)")
     
     args = parser.parse_args()
     
@@ -243,7 +266,7 @@ def main():
     print(f"Dataset: {len(features)} samples, {features.shape[1]} features")
     print(f"Classes: {(labels == 0).sum()} real, {(labels == 1).sum()} fake")
     
-    test_classifiers(features, labels, args.pca_dims, args.val_split)
+    test_classifiers(features, labels, args.pca_dims, args.val_split, balance=not args.no_balance)
 
 
 if __name__ == "__main__":
