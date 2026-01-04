@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # CPU-only service
+  deepfake-cpu:
+    build:
+      context: .
+      args:
+        USE_GPU: "false"
+    image: deepfake-detector:cpu
+    container_name: deepfake-cpu
+    
+    volumes:
+      - ./data:/app/data
+      - ./experiments:/app/experiments
+      - ./artifacts:/app/artifacts
+      - ~/.kaggle:/root/.kaggle:ro
+    
+    stdin_open: true
+    tty: true
+    
+    # Override with: docker-compose run deepfake-cpu python main.py <command>
+    command: ["python", "main.py", "--help"]
+
+  # GPU service (requires NVIDIA Docker)
+  deepfake-gpu:
+    build:
+      context: .
+      args:
+        USE_GPU: "true"
+    image: deepfake-detector:gpu
+    container_name: deepfake-gpu
+    
+    volumes:
+      - ./data:/app/data
+      - ./experiments:/app/experiments
+      - ./artifacts:/app/artifacts
+      - ~/.kaggle:/root/.kaggle:ro
+    
+    stdin_open: true
+    tty: true
+    
+    # NVIDIA GPU support
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    
+    command: ["python", "main.py", "--help"]
+
+# Usage Examples:
+# ===============
+#
+# Build CPU image:
+#   docker-compose build deepfake-cpu
+#
+# Build GPU image:
+#   docker-compose build deepfake-gpu
+#
+# Download dataset:
+#   docker-compose run deepfake-cpu python main.py download
+#
+# Extract CNN features:
+#   docker-compose run deepfake-gpu python main.py preprocess --features cnn --output data/cnn
+#
+# Extract localized DCT features:
+#   docker-compose run deepfake-cpu python main.py preprocess --features localized --output data/localized
+#
+# Analyze data:
+#   docker-compose run deepfake-cpu python analyze_data.py data/cnn --save_plots
+#
+# Train model:
+#   docker-compose run deepfake-cpu python main.py train --data_dir data/cnn --pca_dim 64
+#
+# Test classifiers:
+#   docker-compose run deepfake-cpu python test_localized.py data/cnn --pca_dims 32 64 128
+#
+# Interactive shell:
+#   docker-compose run deepfake-cpu bash

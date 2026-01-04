@@ -1,0 +1,9 @@
+.venv/
+artifacts/
+experiments/
+data/
+__pycache__/
+*.pt
+*.pth
+*.npy
+*.png

@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info
+.eggs
+*.egg
+.venv
+venv
+ENV
+
+# Data and artifacts (mount as volumes instead)
+data/
+experiments/
+artifacts/
+*.npy
+*.pt
+*.pth
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.log
+*.tmp
+.env
+
